@@ -2,9 +2,8 @@ import pandas as pd
 import numpy as np
 import os
 import time
-
-
-
+import argparse
+import sys
 
 def getMaxFreq(table, col):
     return list(table.iloc[:,col].value_counts().to_dict().values())[0]
@@ -51,6 +50,17 @@ def olken(lst, frame, max_p):
 
 def main():
     """
+    Parsing Arguments
+    """
+    parser = argparse.ArgumentParser(description="take params including scale factors")
+    parser.add_argument('--sf', nargs=1)
+    if (parser.parse_args().sf == None):
+        print("Please specify scale factor after --sf\ne.g. \"python EO_Q3.py --sf 0.1\"")
+        exit(0)
+    else:
+        sf = parser.parse_args().sf[0]
+    
+    """
     Random State 
     """
     np.random.seed(42)
@@ -59,9 +69,13 @@ def main():
     Load Table
     """
     cur_dir = os.path.dirname(os.path.realpath(__file__))
-    cust_table = pd.read_table(os.path.join(cur_dir, "data", "0.1x", "customer.tbl"), delimiter='|', usecols=[0], names=["CUSTKEY"])
-    order_table = pd.read_table(os.path.join(cur_dir, "data", "0.1x", "orders.tbl"), delimiter='|', usecols=[0, 1], names=["ORDERKEY", "CUSTKEY"])
-    lineitem_table = pd.read_table(os.path.join(cur_dir, "data", "0.1x", "lineitem.tbl"), delimiter='|', usecols=[0, 3], names=["ORDERKEY", "LINENUMBER"])
+    data_path = os.path.join(cur_dir, "data", sf + "x")
+    if not os.path.exists(data_path):
+        print("\"{}\" doesn't exists... please check again...".format(data_path))
+        exit(0)
+    cust_table = pd.read_table(os.path.join(cur_dir, "data", sf + "x", "customer.tbl"), delimiter='|', usecols=[0], names=["CUSTKEY"])
+    order_table = pd.read_table(os.path.join(cur_dir, "data", sf + "x", "orders.tbl"), delimiter='|', usecols=[0, 1], names=["ORDERKEY", "CUSTKEY"])
+    lineitem_table = pd.read_table(os.path.join(cur_dir, "data", sf + "x", "lineitem.tbl"), delimiter='|', usecols=[0, 3], names=["ORDERKEY", "LINENUMBER"])
 
     """
     Prepare to sample
