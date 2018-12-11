@@ -5,7 +5,7 @@ import time
 import argparse
 import sys
 
- def main():
+def main():
     """
     Parsing Arguments
     """
@@ -46,5 +46,5 @@ import sys
         sample_size += 1
     print("--- %s seconds ---" % (time.time() - start_time))
 
- if __name__ == '__main__':
+if __name__ == '__main__':
     main()
