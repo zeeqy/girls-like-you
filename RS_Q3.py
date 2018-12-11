@@ -56,13 +56,13 @@ def main():
     parser.add_argument('--sf', nargs=1)
     parser.add_argument('--ss', nargs=1)
     if (parser.parse_args().sf == None):
-        print("Please specify scale factor after --sf\ne.g. \"python EO_Q3.py --sf 0.1\"")
+        print("Please specify scale factor after --sf\ne.g. \"python RS_Q3.py --sf 0.1\"")
         exit(0)
     else:
         sf = parser.parse_args().sf[0]
 
     if (parser.parse_args().ss == None):
-        print("Please specify sample size after --ss\ne.g. \"python EO_Q3.py --ss 10000\"")
+        print("Please specify sample size after --ss\ne.g. \"python RS_Q3.py --ss 10000\"")
         exit(0)
     else:
         tot_size = parser.parse_args().ss[0]
@@ -87,14 +87,12 @@ def main():
     """
     Prepare to sample
     """
-    tot_size = 1000
     sample_size = 0
-    max_p = 1.0
+
+    max_p = 1.0   # <-------- special for reverse sample
+
     frame = [(0,0),(1,0),(0,1)]
     lst = [cust_table,order_table,lineitem_table]
-
-    for tbl in range(1,len(frame)):
-        max_p *= getMaxFreq(lst[tbl],frame[tbl][0])
 
     """
     Begin sampling
