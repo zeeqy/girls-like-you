@@ -115,23 +115,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    '''
-    data0 = np.array([['','C1','C2'],
-                ['Row1',"Peter","kiwi"],
-                ['Row2',"John","banana"],
-                ['Row3',"Susan","peach"],
-                ['Row4',"Joe","apple"]])
-    df0 = pd.DataFrame(data=data0[1:,1:],
-                  columns=data0[0,1:])
-    print df0
-    data1 = np.array([['','C3','C4'],
-                ['Row1',"apple",4],
-                ['Row2',"banana",7],
-                ['Row3',"apple",4]])
-    df1 = pd.DataFrame(data=data1[1:,1:],
-                  columns=data1[0,1:])
-    df1['C4'] = pd.to_numeric(df1['C4'])
-    print df1
-    #df0['W'] = df0['C2'].map(df1.set_index('C3', append=True)\
-    #                        .sum(level=1)['C4']).fillna(0)
-        #print df0 
