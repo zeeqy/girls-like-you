@@ -14,19 +14,6 @@ def computeCountDP(lst, frame):
                             .sum(level=1)['W']).fillna(0)
         level -= 1
 
-def exactWeight0(lst, frame):
-    t = lst[0].sample(n=1)
-    w = t['W'].values[0]
-    if w == 0:
-        return False
-    level = 1
-    while level < len(lst):
-        val = t[frame[level-1][1]].values[0]
-        temp_results = lst[level][lst[level][frame[level][0]]==val]
-        t = temp_results.sample(n=1)
-        level += 1
-    return True
-
 def exactWeight(lst, frame):
     idx = np.random.choice(lst[0].index.values)
     w = lst[0].iloc[idx]["W"]
@@ -36,7 +23,11 @@ def exactWeight(lst, frame):
     while level < len(lst):
         val = lst[level-1].iloc[idx][frame[level-1][1]]
         temp_results = lst[level][lst[level][frame[level][0]]==val]
-        idx = np.random.choice(temp_results.index.values)
+        #idx = np.random.choice(temp_results.index.values)
+        weights = temp_results["W"].values
+        tot = float(np.sum(weights))
+        prob = np.divide(weights, tot)
+        idx = np.random.choice(temp_results.index.values, p=prob)
         level += 1
     return True
 
@@ -72,7 +63,7 @@ def main():
     """
     Prepare to sample
     """
-    tot_size = 1000
+    tot_size = 10000
     sample_size = 0
     frame = [("", "CUSTKEY"),("CUSTKEY", "ORDERKEY"), ("ORDERKEY","")]
     lst = [cust_table,order_table,lineitem_table]
