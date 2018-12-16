@@ -11,9 +11,6 @@ def getMaxFreq(table, col):
 def freq_table(table, col):
     return table.iloc[:,col].value_counts().to_dict()
 
-def getFreq(table, col, value):
-    return (table.iloc[:,col] == value).sum()
-
 def olken(lst, lst2, frame, max_p):
     """
     Init
