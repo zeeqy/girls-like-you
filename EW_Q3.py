@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import pandas as pd
 import numpy as np
 import os
@@ -135,4 +136,3 @@ if __name__ == '__main__':
     #df0['W'] = df0['C2'].map(df1.set_index('C3', append=True)\
     #                        .sum(level=1)['C4']).fillna(0)
         #print df0 
-    '''    
