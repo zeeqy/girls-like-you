@@ -76,6 +76,8 @@ def main():
     sample_size = 0
     max_p = 1.0
     frame = [(0,0),(1,0),(0,1)]
+
+    print('building dictionary ...')
     order_dict = load_dictionary(order_list,frame[1])
     lineitem_dict = load_dictionary(lineitem_list,frame[2])
 
