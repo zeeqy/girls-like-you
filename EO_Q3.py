@@ -1,5 +1,5 @@
 import pandas as pd
-import numpy as np
+import random
 import os
 import time
 import argparse
@@ -8,47 +8,32 @@ import sys
 def getMaxFreq(table, col):
     return list(table.iloc[:,col].value_counts().to_dict().values())[0]
 
-def freq_table(table, col):
-    return table.iloc[:,col].value_counts().to_dict()
+def load_dictionary(table, frame):
+    d = {}
+    for t in table:
+        d.setdefault(t[frame[0]], []).append(t[frame[1]])
+    return d
 
-def olken(lst, lst2, frame, max_p):
+def olken(cust_list, order_dict, lineitem_dict, max_p):
     """
     Init
     """
-    p = max_p = 1.0
-    level = 1
+    p = 1.0
 
-    """
-    First table
-    """
-    idx = np.random.randint(0, lst[0].shape[0])
-    value = lst[0].iloc[idx,frame[0][0]]
+    value = random.choice(cust_list)
 
-    while level < len(lst):
-        # table dataframe
-        df = lst[level]
-        # frequency dataframe
-        df2 = lst2[level-1]
-        # frame in current iteration
-        cur_frame = frame[level]
+    if value in order_dict:
+        p *= len(order_dict[value])
+        value = random.choice(order_dict[value])
+    else:
+        return False
 
-        if value not in df2:
-            # zero matching
-            return False
-        else:
-            degree = df2[value]
+    if value in lineitem_dict:
+        p *= len(lineitem_dict[value])
+    else:
+        return False
 
-        idx_offset = np.random.randint(0, degree)
-        
-        """
-        Update value
-        """
-        attr = list(df.columns.values)[cur_frame[0]]
-        value = df[df[attr]==value].iloc[idx_offset,cur_frame[1]]
-        level += 1
-        p *= degree
-
-    return np.random.uniform(0, max_p) < p
+    return random.uniform(0, max_p) < p
 
 def main():
     """
@@ -70,11 +55,6 @@ def main():
         tot_size = int(parser.parse_args().ss[0])
     
     """
-    Random State 
-    """
-    np.random.seed(42)
-
-    """
     Load Table
     """
     cur_dir = os.path.dirname(os.path.realpath(__file__))
@@ -86,8 +66,9 @@ def main():
     order_table = pd.read_table(os.path.join(cur_dir, "data", sf + "x", "orders.tbl"), delimiter='|', usecols=[0, 1], names=["ORDERKEY", "CUSTKEY"])
     lineitem_table = pd.read_table(os.path.join(cur_dir, "data", sf + "x", "lineitem.tbl"), delimiter='|', usecols=[0, 3], names=["ORDERKEY", "LINENUMBER"])
 
-    order_cust_freq = freq_table(order_table, 1)
-    line_order_freq = freq_table(lineitem_table, 0)
+    cust_list = cust_table['CUSTKEY'].values.tolist()
+    order_list = order_table.values.tolist()
+    lineitem_list = lineitem_table.values.tolist()
     
     """
     Prepare to sample
@@ -95,22 +76,29 @@ def main():
     sample_size = 0
     max_p = 1.0
     frame = [(0,0),(1,0),(0,1)]
+    order_dict = load_dictionary(order_list,frame[1])
+    lineitem_dict = load_dictionary(lineitem_list,frame[2])
+
     lst_table = [cust_table,order_table,lineitem_table]
-    lst_freq = [order_cust_freq, line_order_freq]
 
     for tbl in range(1,len(frame)):
         max_p *= getMaxFreq(lst_table[tbl],frame[tbl][0])
 
+    print('max_p = {}'.format(max_p))
+
     """
     Begin sampling
     """
-    start_time = time.time()
-    
-    while sample_size < tot_size:
-        if olken(lst_table,lst_freq,frame,max_p):
-            sample_size += 1
+    print('begin sampling ...')
 
-    print("--- %s seconds ---" % (time.time() - start_time))
+    start_time = time.time()
+    trail = 1
+    while sample_size < tot_size:
+        if olken(cust_list,order_dict,lineitem_dict, max_p):
+            sample_size += 1
+        trail +=1
+
+    print("sampling time = {}, trail = {}".format((time.time() - start_time), trail))
 
 if __name__ == '__main__':
     main()
