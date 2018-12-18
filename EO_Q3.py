@@ -47,12 +47,6 @@ def main():
         exit(0)
     else:
         sf = parser.parse_args().sf[0]
-
-    if (parser.parse_args().ss == None):
-        print("Please specify sample size after --ss\ne.g. \"python EO_Q3.py --ss 10000\"")
-        exit(0)
-    else:
-        tot_size = int(parser.parse_args().ss[0])
     
     """
     Load Table
@@ -92,15 +86,17 @@ def main():
     Begin sampling
     """
     print('begin sampling ...')
+    for tot_size in [1000,10000,100000,1000000]:
+        print('sample size = {}'.format(tot_size))
+        start_time = time.time()
+        trail = 1
+        while sample_size < tot_size:
+            if olken(cust_list,order_dict,lineitem_dict, max_p):
+                sample_size += 1
+            trail +=1
 
-    start_time = time.time()
-    trail = 1
-    while sample_size < tot_size:
-        if olken(cust_list,order_dict,lineitem_dict, max_p):
-            sample_size += 1
-        trail +=1
-
-    print("sampling time = {}, trail = {}".format((time.time() - start_time), trail))
+        print("sampling time = {}, trail = {}".format((time.time() - start_time), trail))
+        print("--"*50)
 
 if __name__ == '__main__':
     main()
