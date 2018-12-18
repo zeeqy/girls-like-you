@@ -4,6 +4,7 @@ import os
 import time
 import argparse
 import sys
+from multiprocessing import Process, Pool, cpu_count, current_process
 
 def computeCountDP(lst, frame):
     level = len(frame) - 1
@@ -40,17 +41,32 @@ def exactWeight(lst, frame):
         level += 1
     return True
 
+def sub_processing(lst, frame, sample_size):
+    cnt = 0
+    while (cnt < sample_size):
+        if exactWeight(lst, frame):
+            cnt += 1
+    print("---- {} sampled {} records...----".format(current_process().name, cnt))
+    return
+
 def main():
     """
     Parsing Arguments
     """
     parser = argparse.ArgumentParser(description="take params including scale factors")
     parser.add_argument('--sf', nargs=1)
+    parser.add_argument('--ss', nargs=1)
     if (parser.parse_args().sf == None):
         print("Please specify scale factor after --sf\ne.g. \"python EO_Q3.py --sf 0.1\"")
         exit(0)
     else:
         sf = parser.parse_args().sf[0]
+
+    if (parser.parse_args().ss == None):
+        print("Please specify sample size after --ss\ne.g. \"python EO_Q3.py --ss 10000\"")
+        exit(0)
+    else:
+        tot_size = int(parser.parse_args().ss[0])
     
     """
     Random State 
@@ -72,42 +88,30 @@ def main():
     """
     Prepare to sample
     """
-    tot_size = 1000
-    sample_size = 0
+    # tot_size = 1000
+    # sample_size = 0
     frame = [("", "CUSTKEY"),("CUSTKEY", "ORDERKEY"), ("ORDERKEY","")]
     lst = [cust_table,order_table,lineitem_table]
 
     """
     Begin sampling - Exact Weight
     """
+
     start_time = time.time()
+
     computeCountDP(lst, frame)
-    while sample_size <= tot_size:
-        if exactWeight(lst,frame):
-            sample_size += 1
+    cpuNum = cpu_count()
+    pool = Pool(cpuNum)
+    print("# threads = {}".format(cpuNum))
+    for i in range(cpuNum):
+        pool.apply_async(sub_processing, args=(lst, frame, tot_size/cpuNum))
+    pool.close()
+    pool.join()
+    # while sample_size <= tot_size:
+    #     if exactWeight(lst,frame, sample_size):
+    #         sample_size += 1
     print("--- %s seconds ---" % (time.time() - start_time))
 
 
 if __name__ == '__main__':
     main()
-    '''
-    data0 = np.array([['','C1','C2'],
-                ['Row1',"Peter","kiwi"],
-                ['Row2',"John","banana"],
-                ['Row3',"Susan","peach"],
-                ['Row4',"Joe","apple"]])
-    df0 = pd.DataFrame(data=data0[1:,1:],
-                  columns=data0[0,1:])
-    print df0
-    data1 = np.array([['','C3','C4'],
-                ['Row1',"apple",4],
-                ['Row2',"banana",7],
-                ['Row3',"apple",4]])
-    df1 = pd.DataFrame(data=data1[1:,1:],
-                  columns=data1[0,1:])
-    df1['C4'] = pd.to_numeric(df1['C4'])
-    print df1
-    #df0['W'] = df0['C2'].map(df1.set_index('C3', append=True)\
-    #                        .sum(level=1)['C4']).fillna(0)
-        #print df0 
-    '''    
