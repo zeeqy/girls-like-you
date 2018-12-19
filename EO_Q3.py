@@ -41,7 +41,6 @@ def main():
     """
     parser = argparse.ArgumentParser(description="take params including scale factors and sample size")
     parser.add_argument('--sf', nargs=1)
-    parser.add_argument('--ss', nargs=1)
     if (parser.parse_args().sf == None):
         print("Please specify scale factor after --sf\ne.g. \"python EO_Q3.py --sf 0.1\"")
         exit(0)
@@ -70,7 +69,7 @@ def main():
     sample_size = 0
     max_p = 1.0
     frame = [(0,0),(1,0),(0,1)]
-
+    print('Extended Olken on Q3 ...')
     print('building dictionary ...')
     order_dict = load_dictionary(order_list,frame[1])
     lineitem_dict = load_dictionary(lineitem_list,frame[2])
