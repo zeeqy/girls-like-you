@@ -132,7 +132,7 @@ def eo_run():
     """
     Begin sampling
     """
-    tot_size = 1000
+    tot_size = 1000000
     sample_size = 0
     print('begin sampling ...')
     print('sample size = {}'.format(tot_size))
@@ -248,8 +248,8 @@ if __name__ == '__main__':
                     print("{}: {}".format(current_process().name, cnt))
             for s in tmp:
                 f.write("{}\n".format(s))
-    tot_size = 1000    
-    cpuNum = 20
+    tot_size = 1000000    
+    cpuNum = 25
     pool = Pool(cpuNum)
     print(cpuNum)
     for i in range(cpuNum):
