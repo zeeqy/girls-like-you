@@ -61,6 +61,7 @@ def main():
     lineitem_dict = load_dictionary(lineitem_list,frame[2])
    
     lst = [cust_table,order_table,lineitem_table]
+    computeCountDP(lst, frame_name)
     """
     Begin sampling - Exact Weight
     """
