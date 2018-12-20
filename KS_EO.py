@@ -4,6 +4,7 @@ import os
 import time
 import argparse
 import sys
+from multiprocessing import Process, Manager, Pool, cpu_count, current_process
 
 def computeCountDP(lst, frame):
     level = len(frame) - 1
@@ -131,10 +132,10 @@ def eo_run():
     """
     Begin sampling
     """
-    print('begin sampling ...')
-    print('sample size = 10000')
-    tot_size = 10000
+    tot_size = 1000000
     sample_size = 0
+    print('begin sampling ...')
+    print('sample size = {}'.format(tot_size))
     start_time = time.time()
     trail = 1
     output = []
@@ -150,7 +151,7 @@ def eo_run():
     return output
 
 if __name__ == '__main__':
-    if True:
+    if False:
         eo_output = eo_run()
         with open('data/eo_output.csv', 'w') as f:
             for item in eo_output:
@@ -217,7 +218,7 @@ if __name__ == '__main__':
                     s2 += 1
 
         s6 = 0
-        for custkey in sorted(cust_dict[tup[0]]):
+        for custkey in cust_dict[tup[0]]:
             for orderkey in order_dict[custkey]:
                 s6 += len(lineitem_dict[orderkey])
 
@@ -234,20 +235,24 @@ if __name__ == '__main__':
             if orderkey == tup[3]:
                 while s5 < tup[4]:
                     s5 += 1
-
-
         return s1 + s2 * s6 + (s3 + s4) + s5
-
-    prob = []
-    c = 0
-    for tup in eo_output:
-        pos = position(tup, nation_list, supplier_dict ,cust_dict, order_dict, lineitem_dict)
-        prob.append(pos/2400301184)
-        c += 1
-        if c % 100 == 0:
-            print("currently at {}".format(c))
-
-    with open('data/eo_ks_output.csv', 'w') as f:
-        for item in prob:
-            f.write("{}\n".format(item))
-
+    
+    def sub_process(i, lst, nation_list, supplier_dict ,cust_dict, order_dict, lineitem_dict):
+        with open('data/eo_ks_output_{}.csv'.format(i), 'w') as f:
+            cnt = 0
+            tmp = []
+            for tup in lst:
+                tmp.append(position(tup, nation_list, supplier_dict ,cust_dict, order_dict, lineitem_dict)/2400301184)
+                cnt += 1
+                if cnt % 10 == 0:
+                    print("{}: {}".format(current_process().name, cnt))
+            for s in tmp:
+                f.write("{}\n".format(s))
+    tot_size = 1000000    
+    cpuNum = 20
+    pool = Pool(cpuNum)
+    print(cpuNum)
+    for i in range(cpuNum):
+        pool.apply_async(sub_process, args=(i, eo_output[i*int(tot_size/cpuNum):(i+1)*int(tot_size/cpuNum)], nation_list, supplier_dict, cust_dict, order_dict, lineitem_dict, ))
+    pool.close()
+    pool.join()
