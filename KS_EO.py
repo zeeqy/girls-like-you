@@ -132,8 +132,8 @@ def eo_run():
     Begin sampling
     """
     print('begin sampling ...')
-    print('sample size = 1000000')
-    tot_size = 1000000
+    print('sample size = 10000')
+    tot_size = 10000
     sample_size = 0
     start_time = time.time()
     trail = 1
@@ -150,7 +150,7 @@ def eo_run():
     return output
 
 if __name__ == '__main__':
-    if False:
+    if True:
         eo_output = eo_run()
         with open('data/eo_output.csv', 'w') as f:
             for item in eo_output:
@@ -215,26 +215,33 @@ if __name__ == '__main__':
         for suppierkey in sorted(supplier_dict[tup[0]]):
             if suppierkey < tup[1]:
                     s2 += 1
+
+        s6 = 0
+        for custkey in sorted(cust_dict[tup[0]]):
+            for orderkey in order_dict[custkey]:
+                s6 += len(lineitem_dict[orderkey])
+
         s3 = 0
         for custkey in sorted(cust_dict[tup[0]]):
             if custkey < tup[2]:
                 for orderkey in order_dict[custkey]:
                     s3 += len(lineitem_dict[orderkey])
         s4 = 0
+        s5 = 0
         for orderkey in sorted(order_dict[tup[2]]):
             if orderkey < tup[3]:
                 s4 += len(lineitem_dict[orderkey])
+            if orderkey == tup[3]:
+                while s5 < tup[4]:
+                    s5 += 1
 
-        return s1+s2*(s3+s4)+1
 
-    print(position([2,125,104863,4714245,1],nation_list, supplier_dict ,cust_dict, order_dict, lineitem_dict))
+        return s1 + s2 * s6 + (s3 + s4) + s5
 
-    # prob = []
-    # for tup in eo_output[:10]:
-    #     pos = position(tup,nation_list, supplier_dict ,cust_dict, order_dict, lineitem_dict)
-    #     prob.append(pos/2400301184)
+    for tup in eo_output:
+        pos = position(tup, nation_list, supplier_dict ,cust_dict, order_dict, lineitem_dict)
+        print('{}'.format(pos/2400301184))
+    
 
-    # with open('data/eo_ks_output.csv', 'w') as f:
-    #     for item in prob:
-    #         f.write("{}\n".format(item))
+            
 
