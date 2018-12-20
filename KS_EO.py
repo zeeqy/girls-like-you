@@ -132,7 +132,7 @@ def eo_run():
     """
     Begin sampling
     """
-    tot_size = 1000000
+    tot_size = 1000
     sample_size = 0
     print('begin sampling ...')
     print('sample size = {}'.format(tot_size))
@@ -151,7 +151,7 @@ def eo_run():
     return output
 
 if __name__ == '__main__':
-    if False:
+    if True:
         eo_output = eo_run()
         with open('data/eo_output.csv', 'w') as f:
             for item in eo_output:
@@ -248,7 +248,7 @@ if __name__ == '__main__':
                     print("{}: {}".format(current_process().name, cnt))
             for s in tmp:
                 f.write("{}\n".format(s))
-    tot_size = 1000000    
+    tot_size = 1000    
     cpuNum = 20
     pool = Pool(cpuNum)
     print(cpuNum)
