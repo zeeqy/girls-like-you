@@ -151,7 +151,7 @@ def eo_run():
     return output
 
 if __name__ == '__main__':
-    if True:
+    if False:
         eo_output = eo_run()
         with open('data/eo_output.csv', 'w') as f:
             for item in eo_output:
@@ -244,7 +244,7 @@ if __name__ == '__main__':
             for tup in lst:
                 tmp.append(position(tup, nation_list, supplier_dict ,cust_dict, order_dict, lineitem_dict)/2400301184)
                 cnt += 1
-                if cnt % 10 == 0:
+                if cnt % 100 == 0:
                     print("{}: {}".format(current_process().name, cnt))
             for s in tmp:
                 f.write("{}\n".format(s))
