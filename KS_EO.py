@@ -203,13 +203,14 @@ if __name__ == '__main__':
     def position(tup, nation_list, supplier_dict ,cust_dict, order_dict, lineitem_dict):
         s1 = 0
         for nation in range(tup[0]):
+            t = 0
             for custkey in cust_dict[nation]:
                 for orderkey in order_dict[custkey]:
-                    s1 += len(lineitem_dict[orderkey])
+                    t += len(lineitem_dict[orderkey])
 
-            s1 *= len(supplier_dict[nation])
+            t *= len(supplier_dict[nation])
+            s1 += t
 
-        #sup = len(supplier_dict[tup[0]])
         s2 = 0
         for suppierkey in sorted(supplier_dict[tup[0]]):
             if suppierkey < tup[1]:
