@@ -20,9 +20,12 @@ def computeCountDP(lst, frame):
                             .sum(level=1)['W'])
         level -= 1
     lst[0].dropna(how='any',inplace=True)
+    lst[1].dropna(how='any',inplace=True)
 
-def exactWeight(cust_list, order_dict, lineitem_dict):
-    value = random.choice(cust_list)
+def exactWeight(nation_list, supplier_dict ,cust_dict, order_dict, lineitem_dict):
+    value = random.choice(nation_list)
+    random.choice(supplier_dict[value])
+    value = random.choice(cust_dict[value])
     value = random.choice(order_dict[value])
     random.choice(lineitem_dict[value])
 
@@ -46,21 +49,29 @@ def main():
     if not os.path.exists(data_path):
         print("\"{}\" doesn't exists... please check again...".format(data_path))
         exit(0)
-    cust_table = pd.read_table(os.path.join(cur_dir, "data", sf + "x", "customer.tbl"), delimiter='|', usecols=[0], names=["CUSTKEY"])
+    nation_table = pd.read_table(os.path.join(cur_dir, "data", sf + "x", "nation.tbl"), delimiter='|', usecols=[0], names=["NATIONKEY"])
+    supplier_table = pd.read_table(os.path.join(cur_dir, "data", sf + "x", "supplier.tbl"), delimiter='|', usecols=[0,3], names=["SUPPKEY", "NATIONKEY"])
+    cust_table = pd.read_table(os.path.join(cur_dir, "data", sf + "x", "customer.tbl"), delimiter='|', usecols=[0, 3], names=["CUSTKEY", "NATIONKEY"])
     order_table = pd.read_table(os.path.join(cur_dir, "data", sf + "x", "orders.tbl"), delimiter='|', usecols=[0, 1], names=["ORDERKEY", "CUSTKEY"])
     lineitem_table = pd.read_table(os.path.join(cur_dir, "data", sf + "x", "lineitem.tbl"), delimiter='|', usecols=[0, 3], names=["ORDERKEY", "LINENUMBER"])
-    
-    frame = [(0,0),(1,0),(0,1)]
-    frame_name = [("", "CUSTKEY"),("CUSTKEY", "ORDERKEY"), ("ORDERKEY","")]
 
-    print('Exact Weight on Q3 ...')
+    frame = [(0,0),(1,0),(1,0),(1,0),(0,1)]
+    frame_name = [("", "NATIONKEY"),("NATIONKEY","CUSTKEY"),("CUSTKEY","ORDERKEY"),("ORDERKEY", "")]
+
+    print('Exact Weight on QX ...')
     print('building dictionary ...')
-    order_list = order_table[["ORDERKEY", "CUSTKEY"]].values.tolist()
-    lineitem_list = lineitem_table[["ORDERKEY", "LINENUMBER"]].values.tolist()
-    order_dict = load_dictionary(order_list,frame[1])
-    lineitem_dict = load_dictionary(lineitem_list,frame[2])
-   
-    lst = [cust_table,order_table,lineitem_table]
+    lst = [nation_table, cust_table, order_table, lineitem_table]
+    computeCountDP(lst, frame_name)
+    nation_list = nation_table['NATIONKEY'].values.tolist()
+    supplier_list = supplier_table.values.tolist()
+    cust_list = cust_table.values.tolist()
+    order_list = order_table.values.tolist()
+    lineitem_list = lineitem_table.values.tolist()
+    supplier_dict = load_dictionary(supplier_list,frame[1])
+    cust_dict = load_dictionary(cust_list,frame[2])
+    order_dict = load_dictionary(order_list,frame[3])
+    lineitem_dict = load_dictionary(lineitem_list,frame[4])
+
     """
     Begin sampling - Exact Weight
     """
@@ -71,9 +82,8 @@ def main():
         print('DP ...')
         start_time = time.time()
         computeCountDP(lst, frame_name)
-        cust_list = cust_table['CUSTKEY'].values.tolist()
         while sample_size < tot_size:
-            exactWeight(cust_list,order_dict,lineitem_dict)
+            exactWeight(nation_list, supplier_dict ,cust_dict, order_dict, lineitem_dict)
             sample_size += 1
         print("sampling time = {}".format((time.time() - start_time)))
         print("--"*50)
