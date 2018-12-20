@@ -58,7 +58,6 @@ def main():
     """
     Prepare to sample
     """
-    sample_size = 0
     frame = [(0,0),(1,0),(0,1)]
     print('Reverse Sample on Q3 ...')
     print('building dictionary ...')
@@ -71,6 +70,7 @@ def main():
     print('begin sampling ...')
     for tot_size in [1000,10000,100000,1000000]:
         print('sample size = {}'.format(tot_size))
+        sample_size = 0
         start_time = time.time()
         while sample_size < tot_size:
             if rev_sample(cust_list,order_dict,lineitem_dict):
