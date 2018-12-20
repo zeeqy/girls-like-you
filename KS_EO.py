@@ -238,10 +238,16 @@ if __name__ == '__main__':
 
         return s1 + s2 * s6 + (s3 + s4) + s5
 
+    prob = []
+    c = 0
     for tup in eo_output:
         pos = position(tup, nation_list, supplier_dict ,cust_dict, order_dict, lineitem_dict)
-        print('{}'.format(pos/2400301184))
-    
+        prob.append(pos/2400301184)
+        c += 1
+        if c % 100 == 0:
+            print("currently at {}".format(c))
 
-            
+    with open('data/eo_ks_output.csv', 'w') as f:
+        for item in prob:
+            f.write("{}\n".format(item))
 
