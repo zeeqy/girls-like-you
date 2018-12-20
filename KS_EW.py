@@ -128,16 +128,14 @@ if __name__ == '__main__':
         tot_size = 10000
         sample_size = 0
         start_time = time.time()
-        trail = 1
         ew_output = []
         while sample_size < tot_size:
             tup = exactWeight(nation_list, supplier_dict ,cust_dict, order_dict, lineitem_dict)
             if tup:
                 sample_size += 1
                 ew_output.append(tup)
-            trail +=1
 
-        print("sampling time = {}, trail = {}".format((time.time() - start_time), trail))
+        print("sampling time = {}".format((time.time() - start_time)))
         print("--"*50)
         with open('data/ew_output.csv', 'w') as f:
             for item in ew_output:
