@@ -1,10 +1,15 @@
 import pandas as pd
-import numpy as np
+import random
 import os
 import time
 import argparse
 import sys
-from multiprocessing import Process, Pool, cpu_count, current_process
+
+def load_dictionary(table, frame):
+    d = {}
+    for t in table:
+        d.setdefault(t[frame[0]], []).append(t[frame[1]])
+    return d
 
 def computeCountDP(lst, frame):
     level = len(frame) - 1
@@ -12,42 +17,15 @@ def computeCountDP(lst, frame):
     level -= 1
     while level >= 0:
         lst[level]['W'] = lst[level][frame[level][1]].map(lst[level+1].set_index(frame[level+1][0], append=True)\
-                            .sum(level=1)['W']).fillna(0)
+                            .sum(level=1)['W'])
         level -= 1
+    lst[0].dropna(how='any',inplace=True)
 
-def exactWeight0(lst, frame):
-    t = lst[0].sample(n=1)
-    w = t['W'].values[0]
-    if w == 0:
-        return False
-    level = 1
-    while level < len(lst):
-        val = t[frame[level-1][1]].values[0]
-        temp_results = lst[level][lst[level][frame[level][0]]==val]
-        t = temp_results.sample(n=1)
-        level += 1
+def exactWeight(cust_list, order_dict, lineitem_dict):
+    value = random.choice(cust_list)
+    value = random.choice(order_dict[value])
+    random.choice(lineitem_dict[value])
     return True
-
-def exactWeight(lst, frame):
-    idx = np.random.choice(lst[0].index.values)
-    w = lst[0].iloc[idx]["W"]
-    if w == 0:
-        return False
-    level = 1
-    while level < len(lst):
-        val = lst[level-1].iloc[idx][frame[level-1][1]]
-        temp_results = lst[level][lst[level][frame[level][0]]==val]
-        idx = np.random.choice(temp_results.index.values)
-        level += 1
-    return True
-
-def sub_processing(lst, frame, sample_size):
-    cnt = 0
-    while (cnt < sample_size):
-        if exactWeight(lst, frame):
-            cnt += 1
-    print("---- {} sampled {} records...----".format(current_process().name, cnt))
-    return
 
 def main():
     """
@@ -69,11 +47,6 @@ def main():
         tot_size = int(parser.parse_args().ss[0])
     
     """
-    Random State 
-    """
-    np.random.seed(42)
-
-    """
     Load Table
     """
     cur_dir = os.path.dirname(os.path.realpath(__file__))
@@ -84,33 +57,34 @@ def main():
     cust_table = pd.read_table(os.path.join(cur_dir, "data", sf + "x", "customer.tbl"), delimiter='|', usecols=[0], names=["CUSTKEY"])
     order_table = pd.read_table(os.path.join(cur_dir, "data", sf + "x", "orders.tbl"), delimiter='|', usecols=[0, 1], names=["ORDERKEY", "CUSTKEY"])
     lineitem_table = pd.read_table(os.path.join(cur_dir, "data", sf + "x", "lineitem.tbl"), delimiter='|', usecols=[0, 3], names=["ORDERKEY", "LINENUMBER"])
+    
+    frame = [(0,0),(1,0),(0,1)]
+    frame_name = [("", "CUSTKEY"),("CUSTKEY", "ORDERKEY"), ("ORDERKEY","")]
 
-    """
-    Prepare to sample
-    """
-    # tot_size = 1000
-    # sample_size = 0
-    frame = [("", "CUSTKEY"),("CUSTKEY", "ORDERKEY"), ("ORDERKEY","")]
+    print('Exact Weight on Q3 ...')
+    print('building dictionary ...')
+    order_list = order_table[["ORDERKEY", "CUSTKEY"]].values.tolist()
+    lineitem_list = lineitem_table[["ORDERKEY", "LINENUMBER"]].values.tolist()
+    order_dict = load_dictionary(order_list,frame[1])
+    lineitem_dict = load_dictionary(lineitem_list,frame[2])
+   
     lst = [cust_table,order_table,lineitem_table]
-
     """
     Begin sampling - Exact Weight
     """
-
-    start_time = time.time()
-
-    computeCountDP(lst, frame)
-    cpuNum = cpu_count()
-    pool = Pool(cpuNum)
-    print("# threads = {}".format(cpuNum))
-    for i in range(cpuNum):
-        pool.apply_async(sub_processing, args=(lst, frame, tot_size/cpuNum))
-    pool.close()
-    pool.join()
-    # while sample_size <= tot_size:
-    #     if exactWeight(lst,frame, sample_size):
-    #         sample_size += 1
-    print("--- %s seconds ---" % (time.time() - start_time))
+    print('begin sampling ...')
+    for tot_size in [1000,10000,100000,1000000]:
+        print('sample size = {}'.format(tot_size))
+        sample_size = 0
+        print('DP ...')
+        start_time = time.time()
+        computeCountDP(lst, frame_name)
+        cust_list = cust_table['CUSTKEY'].values.tolist()
+        while sample_size < tot_size:
+            exactWeight(cust_list,order_dict,lineitem_dict)
+            sample_size += 1
+        print("sampling time = {}".format((time.time() - start_time)))
+        print("--"*50)
 
 
 if __name__ == '__main__':

@@ -66,7 +66,6 @@ def main():
     """
     Prepare to sample
     """
-    sample_size = 0
     max_p = 1.0
     frame = [(0,0),(1,0),(0,1)]
     print('Extended Olken on Q3 ...')
@@ -87,6 +86,7 @@ def main():
     print('begin sampling ...')
     for tot_size in [1000,10000,100000,1000000]:
         print('sample size = {}'.format(tot_size))
+        sample_size = 0
         start_time = time.time()
         trail = 1
         while sample_size < tot_size:
