@@ -103,11 +103,11 @@ if __name__ == '__main__':
     lineitem_table = pd.read_table(os.path.join(cur_dir, "data", sf + "x", "lineitem.tbl"), delimiter='|', usecols=[0, 3], names=["ORDERKEY", "LINENUMBER"])
 
     frame = [(0,0),(1,0),(1,0),(1,0),(0,1)]
-    frame_name = [("", "NATIONKEY"),("NATIONKEY","CUSTKEY"),("CUSTKEY","ORDERKEY"),("ORDERKEY", "")]
+    frame_name = [("", "NATIONKEY"),("SUPPKEY", "NATIONKEY"),("NATIONKEY","CUSTKEY"),("CUSTKEY","ORDERKEY"),("ORDERKEY", "")]
 
     print('Exact Weight on QX ...')
     print('building dictionary ...')
-    lst = [nation_table, cust_table, order_table, lineitem_table]
+    lst = [nation_table, supplier_table, cust_table, order_table, lineitem_table]
     computeCountDP(lst, frame_name)
     nation_list = nation_table['NATIONKEY'].values.tolist()
     supplier_list = supplier_table.values.tolist()

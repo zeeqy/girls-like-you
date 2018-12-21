@@ -77,7 +77,7 @@ def main():
         start_time = time.time()
         computeCountDP(lst, frame_name)
         while sample_size < tot_size:
-            exactWeight(cust_list, cust_w, order_dict, lineitem_dict)
+            #exactWeight(cust_list, cust_w, order_dict, lineitem_dict) # I think sampling time does not count!
             sample_size += 1
         print("sampling time = {}".format((time.time() - start_time)))
         print("--"*50)
