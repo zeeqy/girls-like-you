@@ -8,7 +8,9 @@ import sys
 def load_dictionary(table, frame):
     d = {}
     for t in table:
-        d.setdefault(t[frame[0]], []).append(t[frame[1]])
+        d.setdefault(t[frame[0]], {'data': [], 'weight': []})#.append([t[frame[1]], t[frame[2]]])
+        d[t[frame[0]]]['data'].append(t[frame[1]])
+        d[t[frame[0]]]['weight'].append(t[frame[2]])
     return d
 
 def computeCountDP(lst, frame):
@@ -21,10 +23,10 @@ def computeCountDP(lst, frame):
         level -= 1
     lst[0].dropna(how='any',inplace=True)
 
-def exactWeight(cust_list, order_dict, lineitem_dict):
-    value = random.choice(cust_list)
-    value = random.choice(order_dict[value])
-    random.choice(lineitem_dict[value])
+def exactWeight(cust_list, cust_w, order_dict, lineitem_dict):
+    value = random.choices(cust_list, cust_w)[0]
+    value = random.choices(order_dict[value]['data'],order_dict[value]['weight'])[0]
+    random.choice(lineitem_dict[value]['data'])
 
 def main():
     """
@@ -50,18 +52,20 @@ def main():
     order_table = pd.read_table(os.path.join(cur_dir, "data", sf + "x", "orders.tbl"), delimiter='|', usecols=[0, 1], names=["ORDERKEY", "CUSTKEY"])
     lineitem_table = pd.read_table(os.path.join(cur_dir, "data", sf + "x", "lineitem.tbl"), delimiter='|', usecols=[0, 3], names=["ORDERKEY", "LINENUMBER"])
     
-    frame = [(0,0),(1,0),(0,1)]
+    frame = [(0,0,1),(1,0,2),(0,1,2)]
     frame_name = [("", "CUSTKEY"),("CUSTKEY", "ORDERKEY"), ("ORDERKEY","")]
+
+    lst = [cust_table,order_table,lineitem_table]
+    computeCountDP(lst, frame_name)
 
     print('Exact Weight on Q3 ...')
     print('building dictionary ...')
-    order_list = order_table[["ORDERKEY", "CUSTKEY"]].values.tolist()
-    lineitem_list = lineitem_table[["ORDERKEY", "LINENUMBER"]].values.tolist()
+    order_list = order_table.values.tolist()
+    lineitem_list = lineitem_table.values.tolist()
     order_dict = load_dictionary(order_list,frame[1])
     lineitem_dict = load_dictionary(lineitem_list,frame[2])
-   
-    lst = [cust_table,order_table,lineitem_table]
-    computeCountDP(lst, frame_name)
+    cust_list = cust_table['CUSTKEY'].values.tolist()
+    cust_w = cust_table['W'].values.tolist()
     """
     Begin sampling - Exact Weight
     """
@@ -72,9 +76,8 @@ def main():
         print('DP ...')
         start_time = time.time()
         computeCountDP(lst, frame_name)
-        cust_list = cust_table['CUSTKEY'].values.tolist()
         while sample_size < tot_size:
-            exactWeight(cust_list,order_dict,lineitem_dict)
+            exactWeight(cust_list, cust_w, order_dict, lineitem_dict)
             sample_size += 1
         print("sampling time = {}".format((time.time() - start_time)))
         print("--"*50)
